@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YK</title>
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;}
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght:500;600;700;800&display=swap');
 
         :root{
@@ -22,7 +22,7 @@
             background:radial-gradient(circle at 10% 0,#251b50 0%,#010103 60%);
         }
 
-        /* === CINEMATIC ANIMATED BACKGROUND === */
+        /* === CINEMATIC BACKGROUND === */
         .bg{position:fixed;inset:0;z-index:-1;}
         .orb{position:absolute;border-radius:50%;filter:blur(100px);opacity:0.3;will-change:transform;}
         .o1{width:700px;height:700px;top:-250px;left:-200px;background:var(--main);animation:drift1 28s infinite ease-in-out;}
@@ -38,7 +38,7 @@
         /* === WELCOME PAGE === */
         #welcomePage{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:60px;position:relative;z-index:1;}
         .title{
-            font-size:82px;font-weight:800;letter-spacing:4px;
+            font-size:82px;font-weight:800;letter-spacing:4px;text-align:center;
             background:linear-gradient(90deg,var(--main),var(--accent),var(--main));background-size:200% auto;
             -webkit-background-clip:text;color:transparent;
             animation:heroIn 1.2s cubic-bezier(0.2,0.85,0.2,1), shine 8s linear infinite;
@@ -55,9 +55,10 @@
         .btn-main:hover::before{transform:translateX(100%);}
         .btn-main:hover{transform:translateY(-6px);box-shadow:var(--glow-strong);}
 
-        /* === ATTENDANCE PAGE === */
+        /* === ATTENDANCE PAGE — FULLY ORDERED A-Z === */
         #attendPage{display:none;padding:45px 28px;max-width:1150px;margin:0 auto;position:relative;z-index:1;animation:pageIn 0.4s ease;}
-        @keyframes pageIn{from{opacity:0;transform:translateX(20px);}}
+        @keyframes pageIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+
         .top-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;margin-bottom:32px;}
         .back{color:var(--muted);cursor:pointer;font-size:15px;transition:var(--transition);display:flex;align-items:center;gap:4px;}
         .back:hover{color:white;transform:translateX(-6px);}
@@ -102,10 +103,15 @@
         .row{border-bottom:1px solid rgba(255,255,255,0.03);}
         .row:last-child{border:none;}
         .row:hover{background:rgba(255,255,255,0.015);transform:translateX(4px);}
-        .n{flex:2;}
-        .c{width:95px;text-align:center;}
-        .s{width:110px;text-align:center;font-weight:600;}
-        .d{width:75px;text-align:center;}
+
+        /* === PERFECT COLUMN ALIGNMENT === */
+        .col-name{width:35%;text-align:left;}
+        .col-present{width:12%;text-align:center;}
+        .col-late{width:12%;text-align:center;}
+        .col-absent{width:12%;text-align:center;}
+        .col-score{width:18%;text-align:center;font-weight:600;}
+        .col-del{width:11%;text-align:center;}
+
         .btn{
             padding:10px 18px;border-radius:14px;border:none;color:white;font-weight:600;
             cursor:pointer;transition:var(--transition);position:relative;overflow:hidden;
@@ -123,12 +129,16 @@
             .head,.row{font-size:13px;padding:16px 20px;}
             .btn{padding:8px 14px;font-size:12px;}
             .btn-main{padding:18px 52px;font-size:18px;}
+            .col-name{width:30%;}
+            .col-present,.col-late,.col-absent{width:15%;}
+            .col-score{width:20%;}
+            .col-del{width:10%;}
         }
     </style>
 </head>
 <body>
 
-<!-- PREMIUM BACKGROUND -->
+<!-- BACKGROUND -->
 <div class="bg">
     <div class="orb o1"></div>
     <div class="orb o2"></div>
@@ -136,13 +146,13 @@
     <script>for(let i=0;i<50;i++){const s=document.createElement('div');s.className='star';const sz=Math.random()*3+1;s.style.width=s.style.height=sz+'px';s.style.left=Math.random()*100+'%';s.style.animationDelay=Math.random()*25+'s';document.querySelector('.bg').appendChild(s);}</script>
 </div>
 
-<!-- WELCOME SCREEN -->
+<!-- WELCOME -->
 <div id="welcomePage">
     <h1 class="title">WELCOME TO YK</h1>
     <button class="btn-main" onclick="go()">ATTENDANCE</button>
 </div>
 
-<!-- ATTENDANCE SYSTEM -->
+<!-- ATTENDANCE — A-Z SORTED -->
 <div id="attendPage">
     <div class="top-bar">
         <span class="back" onclick="back()">← Back</span>
@@ -162,37 +172,40 @@
 
     <div class="list">
         <div class="head">
-            <div class="n">Name</div>
-            <div class="c">Present</div>
-            <div class="c">Late</div>
-            <div class="c">Absent</div>
-            <div class="s">Score</div>
-            <div class="d"></div>
+            <div class="col-name">Name</div>
+            <div class="col-present">Present</div>
+            <div class="col-late">Late</div>
+            <div class="col-absent">Absent</div>
+            <div class="col-score">Score</div>
+            <div class="col-del"></div>
         </div>
         <div id="items"></div>
     </div>
 </div>
 
 <script>
-// === YOUR EXACT RULES LOCKED IN ===
+// === YOUR EXACT RULES + AUTO A-Z SORT ===
 const START=100,ADD=0.01,LATE=0.5,ABSENT=1,MAX=100,MIN=0;
 let names=JSON.parse(localStorage.getItem('ykNames')||'[]');
 let data=JSON.parse(localStorage.getItem('ykData')||'{}');
 let day=new Date().toISOString().split('T')[0];
 document.getElementById('date').value=day;
 
+// Automatically sort names A-Z
+function sortNames(){names.sort((a,b)=>a.localeCompare(b));}
+
 function go(){document.getElementById('welcomePage').style.display='none';document.getElementById('attendPage').style.display='block';draw();}
 function back(){document.getElementById('attendPage').style.display='none';document.getElementById('welcomePage').style.display='flex';}
 document.getElementById('date').onchange=e=>{day=e.target.value;save();draw();check();};
 
-function add(){const n=document.getElementById('newName').value.trim();if(!n||names.includes(n))return;names.push(n);document.getElementById('newName').value='';save();draw();}
-function del(n){if(!confirm('Remove '+n+' and all their records?'))return;names=names.filter(x=>x!==n);Object.values(data).forEach(d=>delete d[n]);save();draw();check();}
+function add(){const n=document.getElementById('newName').value.trim();if(!n||names.includes(n))return;names.push(n);document.getElementById('newName').value='';sortNames();save();draw();}
+function del(n){if(!confirm('Remove '+n+' and all their records?'))return;names=names.filter(x=>x!==n);Object.values(data).forEach(d=>delete d[n]);sortNames();save();draw();check();}
 function mark(n,s){if(!data[day])data[day]={};data[day][n]=s;save();draw();check();}
 
 function calc(n){let sc=START;Object.values(data).forEach(d=>{const s=d[n];if(s==='present'&&sc<MAX)sc=Math.min(MAX,sc+ADD);if(s==='late')sc=Math.max(MIN,sc-LATE);if(s==='absent')sc=Math.max(MIN,sc-ABSENT);});return Math.round(sc*100)/100;}
 function check(){const q=document.getElementById('search').value.trim().toLowerCase();const b=document.getElementById('out');if(!q){b.classList.remove('show');return;}const f=names.find(n=>n.toLowerCase().includes(q));if(!f){b.classList.remove('show');return;}const p=calc(f);b.className='result show '+(p>=95?'g':p>=80?'m':'b');b.innerHTML=`<strong>${f}</strong> — Attendance Score: <strong>${p}%</strong>`;}
 function save(){localStorage.setItem('ykNames',JSON.stringify(names));localStorage.setItem('ykData',JSON.stringify(data));}
-function draw(){if(!data[day])data[day]={};const l=document.getElementById('items');l.innerHTML='';names.forEach(n=>{const s=data[day][n]||'';const p=calc(n);l.innerHTML+=`<div class="row"><div class="n">${n}</div><div class="c"><button class="btn p ${s==='present'?'active':''}" onclick="mark('${n}','present')">P</button></div><div class="c"><button class="btn l ${s==='late'?'active':''}" onclick="mark('${n}','late')">L</button></div><div class="c"><button class="btn a ${s==='absent'?'active':''}" onclick="mark('${n}','absent')">A</button></div><div class="s">${p}%</div><div class="d"><button class="btn x" onclick="del('${n}')">X</button></div></div>`;});}
+function draw(){sortNames();if(!data[day])data[day]={};const l=document.getElementById('items');l.innerHTML='';names.forEach(n=>{const s=data[day][n]||'';const p=calc(n);l.innerHTML+=`<div class="row"><div class="col-name">${n}</div><div class="col-present"><button class="btn p ${s==='present'?'active':''}" onclick="mark('${n}','present')">P</button></div><div class="col-late"><button class="btn l ${s==='late'?'active':''}" onclick="mark('${n}','late')">L</button></div><div class="col-absent"><button class="btn a ${s==='absent'?'active':''}" onclick="mark('${n}','absent')">A</button></div><div class="col-score">${p}%</div><div class="col-del"><button class="btn x" onclick="del('${n}')">X</button></div></div>`;});}
 </script>
 </body>
 </html>
