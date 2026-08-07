@@ -6,32 +6,64 @@
     <title>YK</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif;}
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght:500;600;700;800&display=swap');
 
         :root{
             --main:#7c3aed; --accent:#ec4899; --dark:#05050a; --panel:#11111b;
             --text:#f8fafc; --muted:#94a3b8;
-            --present:#10b981; --late:#f59e0b; --absent:#ef4444;
+            --present:#10b981; --late:#f59e0b; --absent:#ef4444; --del:#f43f5e;
         }
 
         body{
-            min-height:100vh; background:radial-gradient(circle at top,#1e1b4b 0%,var(--dark) 60%);
-            color:var(--text); font-family:'Inter',sans-serif;
+            min-height:100vh; color:var(--text); font-family:'Inter',sans-serif; position:relative; overflow-x:hidden;
+            background:linear-gradient(135deg,#05050a 0%,#0f0c29 50%,#05050a 100%);
         }
 
-        /* WELCOME */
-        #welcomePage{
-            min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:40px;
+        /* === COOL ANIMATED BACKGROUND — NO EMOJIS === */
+        .bg-layer{position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;}
+        .wave-1{
+            position:absolute; width:200%; height:200%; top:-50%; left:-50%;
+            background:radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 55%);
+            animation:move1 25s linear infinite;
         }
-        .title{font-size:68px; font-weight:800; background:linear-gradient(90deg,var(--main),var(--accent)); -webkit-background-clip:text; color:transparent; animation:fadeUp 0.8s ease;}
+        .wave-2{
+            position:absolute; width:200%; height:200%; top:-50%; left:-50%;
+            background:radial-gradient(circle, rgba(236,72,153,0.06) 0%, transparent 55%);
+            animation:move2 30s linear infinite reverse;
+        }
+        @keyframes move1{0%{transform:translate(0,0);}100%{transform:translate(120px,80px);}}
+        @keyframes move2{0%{transform:translate(0,0);}100%{transform:translate(-80px,-120px);}}
+
+        .particle{
+            position:absolute; border-radius:50%; background:rgba(124,58,237,0.15);
+            animation:float 18s infinite ease-in-out;
+        }
+        @keyframes float{
+            0%,100%{transform:translateY(0) rotate(0deg); opacity:0;}
+            15%{opacity:1;}
+            85%{opacity:1;}
+            100%{transform:translateY(-100vh) rotate(360deg); opacity:0;}
+        }
+
+        /* WELCOME PAGE */
+        #welcomePage{
+            min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:40px; position:relative; z-index:1;
+        }
+        .title{
+            font-size:68px; font-weight:800; background:linear-gradient(90deg,var(--main),var(--accent));
+            -webkit-background-clip:text; color:transparent; animation:fadeUp 0.8s ease;
+        }
         @keyframes fadeUp{from{opacity:0;transform:translateY(15px);}}
-        .btn-big{padding:16px 48px; font-size:18px; font-weight:600; border-radius:14px; border:none; background:linear-gradient(135deg,var(--main),var(--accent)); color:white; cursor:pointer; transition:0.2s;}
+        .btn-big{
+            padding:16px 48px; font-size:18px; font-weight:600; border-radius:14px; border:none;
+            background:linear-gradient(135deg,var(--main),var(--accent)); color:white; cursor:pointer; transition:0.2s;
+        }
         .btn-big:hover{transform:translateY(-3px); box-shadow:0 10px 30px rgba(124,58,237,0.25);}
 
-        /* ATTENDANCE */
-        #attendPage{display:none; padding:30px 20px; max-width:950px; margin:0 auto;}
+        /* ATTENDANCE PAGE */
+        #attendPage{display:none; padding:30px 20px; max-width:1000px; margin:0 auto; position:relative; z-index:1;}
         .top-bar{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px;}
-        .back{color:var(--muted); cursor:pointer;}
+        .back{color:var(--muted); cursor:pointer; font-size:14px;}
         .back:hover{color:white;}
         h2{font-size:28px; color:var(--main);}
         input{padding:10px 14px; border-radius:10px; border:1px solid rgba(124,58,237,0.3); background:var(--panel); color:white; outline:none;}
@@ -56,12 +88,14 @@
         .name-col{flex:2;}
         .stat-col{width:80px; text-align:center;}
         .score-col{width:90px; text-align:center; font-weight:600;}
+        .del-col{width:60px; text-align:center;}
         .btn-grp{display:flex; gap:6px; justify-content:center;}
-        .btn-s{padding:6px 10px; border-radius:8px; border:none; color:white; font-weight:500; cursor:pointer;}
+        .btn-s{padding:6px 10px; border-radius:8px; border:none; color:white; font-weight:500; cursor:pointer; transition:0.15s;}
         .btn-s.active{outline:2px solid white; outline-offset:2px;}
         .p{background:var(--present);}
         .l{background:var(--late);}
         .a{background:var(--absent);}
+        .del{background:var(--del); padding:6px 12px;}
 
         @media(max-width:600px){
             .title{font-size:42px;}
@@ -72,11 +106,33 @@
 </head>
 <body>
 
+<!-- BACKGROUND ANIMATION -->
+<div class="bg-layer">
+    <div class="wave-1"></div>
+    <div class="wave-2"></div>
+    <script>
+    // Auto generate floating particles
+    const bg = document.querySelector('.bg-layer');
+    for(let i=0;i<30;i++){
+        const p = document.createElement('div');
+        p.classList.add('particle');
+        const s = Math.random()*4+1;
+        p.style.width = p.style.height = s+'px';
+        p.style.left = Math.random()*100+'%';
+        p.style.animationDelay = Math.random()*18+'s';
+        p.style.animationDuration = (Math.random()*10+12)+'s';
+        bg.appendChild(p);
+    }
+    </script>
+</div>
+
+<!-- WELCOME PAGE -->
 <div id="welcomePage">
     <h1 class="title">WELCOME TO YK</h1>
     <button class="btn-big" onclick="goToAttendance()">ATTENDANCE</button>
 </div>
 
+<!-- ATTENDANCE PAGE -->
 <div id="attendPage">
     <div class="top-bar">
         <span class="back" onclick="goBack()">← Back</span>
@@ -85,7 +141,7 @@
     </div>
 
     <div class="search-bar">
-        <input type="text" id="search" placeholder="🔍 Search name to see their %..." oninput="showScore()">
+        <input type="text" id="search" placeholder="Search name to see their percentage..." oninput="showScore()">
     </div>
     <div class="result" id="res"></div>
 
@@ -101,6 +157,7 @@
             <div class="stat-col">Late</div>
             <div class="stat-col">Absent</div>
             <div class="score-col">Score</div>
+            <div class="del-col"></div>
         </div>
         <div id="list"></div>
     </div>
@@ -132,13 +189,21 @@ function addName(){
     save(); render();
 }
 
+// === REMOVE PERSON ===
+function removeName(name){
+    if(!confirm('Remove '+name+'? All their records will be deleted too.')) return;
+    names = names.filter(n=>n!==name);
+    Object.values(data).forEach(del=>delete del[name]);
+    save(); render(); showScore();
+}
+
 function mark(name,st){
     if(!data[day]) data[day]={};
     data[day][name]=st;
     save(); render(); showScore();
 }
 
-// === CALC SCORE WITH YOUR EXACT MATH ===
+// === CALCULATE SCORE ===
 function getScore(name){
     let score = START;
     Object.values(data).forEach(dayData=>{
@@ -178,10 +243,11 @@ function render(){
         list.innerHTML += `
         <div class="row">
             <div class="name-col">${n}</div>
-            <div class="btn-grp stat-col"><button class="btn-s p ${st==='present'?'active':''}" onclick="mark('${n}','present')">✓</button></div>
-            <div class="btn-grp stat-col"><button class="btn-s l ${st==='late'?'active':''}" onclick="mark('${n}','late')">⏳</button></div>
-            <div class="btn-grp stat-col"><button class="btn-s a ${st==='absent'?'active':''}" onclick="mark('${n}','absent')">✗</button></div>
+            <div class="btn-grp stat-col"><button class="btn-s p ${st==='present'?'active':''}" onclick="mark('${n}','present')">P</button></div>
+            <div class="btn-grp stat-col"><button class="btn-s l ${st==='late'?'active':''}" onclick="mark('${n}','late')">L</button></div>
+            <div class="btn-grp stat-col"><button class="btn-s a ${st==='absent'?'active':''}" onclick="mark('${n}','absent')">A</button></div>
             <div class="score-col">${pc}%</div>
+            <div class="del-col"><button class="btn-s del" onclick="removeName('${n}')">X</button></div>
         </div>`;
     });
 }
